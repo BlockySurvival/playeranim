@@ -253,15 +253,15 @@ end
 playeranim.register_animation("stand", {looking=true,facing=true})
 
 playeranim.register_animation("lay", nil, function(player, _time)
-	anim.rotations[BODY] = vector.add(anim.rotations[BODY], anim.rotations.body_lay)
-	anim.positions[BODY] = vector.add(anim.positions[BODY], anim.positions.body_lay)
+	anim.rotations[BODY] = vector.add(anim.rotations[BODY], BONE_ROTATION.body_lay)
+	anim.positions[BODY] = vector.add(anim.positions[BODY], BONE_POSITION.body_lay)
 end)
 
 playeranim.register_animation("sit", {looking=true}, function(player, _time, anim)
 	anim.rotations[LLEG].x = anim.rotations[LLEG].x+90
 	anim.rotations[RLEG].x = anim.rotations[RLEG].x+90
-	anim.rotations[BODY] = vector.add(anim.rotations[BODY], anim.rotations.body_sit)
-	anim.positions[BODY] = vector.add(anim.positions[BODY], anim.positions.body_sit)
+	anim.rotations[BODY] = vector.add(anim.rotations[BODY], BONE_ROTATION.body_sit)
+	anim.positions[BODY] = vector.add(anim.positions[BODY], BONE_POSITION.body_sit)
 end)
 
 playeranim.register_animation("walk", {moving=true,looking=true,facing=true}, function(player, time, anim)
