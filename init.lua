@@ -252,7 +252,7 @@ end
 
 playeranim.register_animation("stand", {looking=true,facing=true})
 
-playeranim.register_animation("lay", nil, function(player, _time)
+playeranim.register_animation("lay", nil, function(player, _time, anim)
 	anim.rotations[BODY] = vector.add(anim.rotations[BODY], BONE_ROTATION.body_lay)
 	anim.positions[BODY] = vector.add(anim.positions[BODY], BONE_POSITION.body_lay)
 end)
