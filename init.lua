@@ -285,6 +285,14 @@ playeranim.register_animation("mine", {moving=true}, function(player, time, anim
 	local rarm_cos = -math_cos(2 * time * anim.speed * math_pi)
 	local pitch = 90 - get_pitch_deg(player)
 
+	if not anim.rotations then
+		minetest.log("error", ("[playeranim] anim rotations don't exist for some reason: "..dump(anim)))
+		return
+	end
+	if not anim.rotations[CAPE] then
+		minetest.log("error", ("[playeranim] anim cape rotations don't exist for some reason: "..dump(anim)))
+		return
+	end
 	anim.rotations[CAPE].x = anim.rotations[CAPE].x+(-5  * cape_sin - 5)
 	anim.rotations[RARM].x = anim.rotations[RARM].x+( 10 * rarm_sin + pitch)
 	anim.rotations[RARM].y = anim.rotations[RARM].y+( 10 * rarm_cos)
