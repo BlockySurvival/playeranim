@@ -267,6 +267,14 @@ end)
 playeranim.register_animation("walk", {moving=true,looking=true,facing=true}, function(player, time, anim)
 
 	local sin = math_sin(time * anim.speed * math_pi)
+	if not anim.rotations then
+		minetest.log("error", ("[playeranim] walk anim rotations don't exist for some reason: "..dump(anim)))
+		return
+	end
+	if not anim.rotations[CAPE] then
+		minetest.log("error", ("[playeranim] walk anim cape rotations don't exist for some reason: "..dump(anim)))
+		return
+	end
 
 	anim.rotations[CAPE].x = anim.rotations[CAPE].x+(-35 * sin - 35)
 	anim.rotations[LARM].x = anim.rotations[LARM].x+(-55 * sin)
@@ -286,11 +294,11 @@ playeranim.register_animation("mine", {moving=true}, function(player, time, anim
 	local pitch = 90 - get_pitch_deg(player)
 
 	if not anim.rotations then
-		minetest.log("error", ("[playeranim] anim rotations don't exist for some reason: "..dump(anim)))
+		minetest.log("error", ("[playeranim] mine anim rotations don't exist for some reason: "..dump(anim)))
 		return
 	end
 	if not anim.rotations[CAPE] then
-		minetest.log("error", ("[playeranim] anim cape rotations don't exist for some reason: "..dump(anim)))
+		minetest.log("error", ("[playeranim] mine anim cape rotations don't exist for some reason: "..dump(anim)))
 		return
 	end
 	anim.rotations[CAPE].x = anim.rotations[CAPE].x+(-5  * cape_sin - 5)
