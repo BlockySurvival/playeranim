@@ -54,6 +54,7 @@ local players_animation_data = setmetatable({}, {
 		init_player = function(self, player)
 			self[player] = {
 				time = 0,
+				inited = false,
 				yaw_history = {},
 				bone_rotations = {},
 				bone_positions = {},
@@ -63,6 +64,10 @@ local players_animation_data = setmetatable({}, {
 				assigned_animations = {},
 				animation_speed = nil
 			}
+		end,
+
+		is_inited = function(self, player)
+			return self[player].inited
 		end,
 
 		-- time
@@ -138,6 +143,7 @@ local players_animation_data = setmetatable({}, {
 
 		set_previous_animations = function(self, player, animations)
 			self[player].previous_animations = animations
+			self[player].inited = true
 		end,
 
 		-- assigned_animations
@@ -408,7 +414,10 @@ local function animate_player(player, dtime)
 	-- Apply any static animations to the base if they have changed, retrieve them if not
 	local rotations
 	local positions
-	if static_animations_changed(previous_animations, animations) then
+	if not players_animation_data:is_inited(player) or static_animations_changed(previous_animations, animations) then
+		if not static_animations_changed(previous_animations, animations) then
+			minetest.log("error", "[playeranim] this does in fact happen, cleanup other mess.")
+		end
 		rotations = table.copy(BONE_ROTATION.default)
 		positions = table.copy(BONE_POSITION.default)
 		for _,animation in ipairs(ORDERED_STATIC_ANIMATIONS) do
