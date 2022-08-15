@@ -273,14 +273,6 @@ end)
 playeranim.register_animation("walk", {moving=true,looking=true,facing=true}, function(player, time, anim)
 
 	local sin = math_sin(time * anim.speed * math_pi)
-	if not anim.rotations then
-		minetest.log("error", ("[playeranim] walk anim rotations don't exist for some reason: "..dump(anim)))
-		return
-	end
-	if not anim.rotations[CAPE] then
-		minetest.log("error", ("[playeranim] walk anim cape rotations don't exist for some reason: "..dump(anim)))
-		return
-	end
 
 	anim.rotations[CAPE].x = anim.rotations[CAPE].x+(-35 * sin - 35)
 	anim.rotations[LARM].x = anim.rotations[LARM].x+(-55 * sin)
@@ -299,14 +291,6 @@ playeranim.register_animation("mine", {moving=true}, function(player, time, anim
 	local rarm_cos = -math_cos(2 * time * anim.speed * math_pi)
 	local pitch = 90 - get_pitch_deg(player)
 
-	if not anim.rotations then
-		minetest.log("error", ("[playeranim] mine anim rotations don't exist for some reason: "..dump(anim)))
-		return
-	end
-	if not anim.rotations[CAPE] then
-		minetest.log("error", ("[playeranim] mine anim cape rotations don't exist for some reason: "..dump(anim)))
-		return
-	end
 	anim.rotations[CAPE].x = anim.rotations[CAPE].x+(-5  * cape_sin - 5)
 	anim.rotations[RARM].x = anim.rotations[RARM].x+( 10 * rarm_sin + pitch)
 	anim.rotations[RARM].y = anim.rotations[RARM].y+( 10 * rarm_cos)
@@ -317,21 +301,22 @@ local function rotate_head(player, anim)
 	anim.rotations[HEAD].x = anim.rotations[HEAD].x+head_x_rotation
 end
 
+local function get_body_x_rotation(player)
+	local sneak = player:get_player_control().sneak
+	return sneak and ROTATE_ON_SNEAK and BODY_X_ROTATION_SNEAK or 0
+end
+local function get_body_y_rotation(player)
+	local yaw_history = players_animation_data:get_yaw_history(player)
+	if #yaw_history > BODY_ROTATION_DELAY then
+		local body_yaw = table_remove(yaw_history, 1)
+		local player_yaw = player:get_look_horizontal()
+		return math_deg(player_yaw - body_yaw)
+	end
+	return 0
+end
 local function rotate_body(player, anim)
-	local body_x_rotation = (function()
-		local sneak = player:get_player_control().sneak
-		return sneak and ROTATE_ON_SNEAK and BODY_X_ROTATION_SNEAK or 0
-	end)()
-
-	local body_y_rotation = (function()
-		local yaw_history = players_animation_data:get_yaw_history(player)
-		if #yaw_history > BODY_ROTATION_DELAY then
-			local body_yaw = table_remove(yaw_history, 1)
-			local player_yaw = player:get_look_horizontal()
-			return math_deg(player_yaw - body_yaw)
-		end
-		return 0
-	end)()
+	local body_x_rotation = get_body_x_rotation(player)
+	local body_y_rotation = get_body_y_rotation(player)
 
 	anim.rotations[BODY].x = anim.rotations[BODY].x+body_x_rotation
 	anim.rotations[BODY].y = anim.rotations[BODY].y+body_y_rotation
@@ -414,10 +399,10 @@ local function animate_player(player, dtime)
 	-- Apply any static animations to the base if they have changed, retrieve them if not
 	local rotations
 	local positions
-	if not players_animation_data:is_inited(player) or static_animations_changed(previous_animations, animations) then
-		if not static_animations_changed(previous_animations, animations) then
-			minetest.log("error", "[playeranim] this does in fact happen, cleanup other mess.")
-		end
+
+	if not players_animation_data:is_inited(player)
+	or static_animations_changed(previous_animations, animations)
+	then
 		rotations = table.copy(BONE_ROTATION.default)
 		positions = table.copy(BONE_POSITION.default)
 		for _,animation in ipairs(ORDERED_STATIC_ANIMATIONS) do
