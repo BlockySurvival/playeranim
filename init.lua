@@ -173,6 +173,17 @@ minetest.register_on_joinplayer(function(player)
 	players_animation_data:init_player(player)
 end)
 
+-- HACK work around https://github.com/luanti-org/luanti/issues/15692
+-- Scales corresponding to default perfect 180° rotations in the character b3d model
+local bone_workaround_scales = {
+	Body = vector.new(-1, 1, -1),
+	Arm_Left = vector.new(1, -1, -1),
+	Arm_Right = vector.new(1, -1, -1),
+	Leg_Left = vector.new(1, -1, -1),
+	Leg_Right = vector.new(1, -1, -1),
+	Cape = vector.new(1, -1, -1),
+}
+
 local function rotate_bone(player, bone, rotation, position)
 	local previous_rotation = players_animation_data:get_bone_rotation(player, bone)
 	local previous_position = players_animation_data:get_bone_position(player, bone)
@@ -180,11 +191,18 @@ local function rotate_bone(player, bone, rotation, position)
 	if not previous_rotation
 	or not previous_position
 	or not vector_equals(rotation, previous_rotation)
-	or not vector_equals(position, previous_position)
-	then
-		player:set_bone_position(bone, position, rotation)
-		players_animation_data:set_bone_rotation(player, bone, rotation)
-		players_animation_data:set_bone_position(player, bone, position)
+	or not vector_equals(position, previous_position) then
+		if player.set_bone_override then -- Luanti 5.9+
+			player:set_bone_override(bone, {
+				position = {vec = position, absolute = true},
+				rotation = {vec = rotation:apply(math.rad), absolute = true},
+				scale = {vec = bone_workaround_scales[bone], absolute = true},
+			})
+		else
+			player:set_bone_position(bone, position, rotation)
+			players_animation_data:set_bone_rotation(player, bone, rotation)
+			players_animation_data:set_bone_position(player, bone, position)
+		end
 	end
 end
 
